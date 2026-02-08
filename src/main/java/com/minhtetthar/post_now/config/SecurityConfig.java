@@ -1,21 +1,19 @@
 package com.minhtetthar.post_now.config;
 
+import com.minhtetthar.post_now.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -27,6 +25,10 @@ public class SecurityConfig {
     @Lazy
     private JwtAuthFilter jwtAuthFilter;
 
+    @Autowired
+    @Lazy
+    private UserService userService;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -36,9 +38,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/api/health/**", "/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // Anyone can view all posts
                         .requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll() // Anyone can view single post
-                        .requestMatchers("/api/posts/**").authenticated() // Create, edit, like, comment require auth
+                        .requestMatchers("/api/posts/**", "/api/comments/**", "/api/likes/**").authenticated()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions().disable()) // For H2 console
+                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -54,13 +57,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("USER", "ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user);
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 }
