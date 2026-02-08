@@ -8,7 +8,6 @@ import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = UserMapper.class)
 public interface PostMapper {
-
     @Mapping(target = "author", source = "author")
     @Mapping(target = "likesCount", ignore = true)
     @Mapping(target = "commentsCount", ignore = true)
