@@ -33,14 +33,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/health/**", "/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts").permitAll() // Anyone can view all posts
-                        .requestMatchers(HttpMethod.GET, "/api/posts/*").permitAll() // Anyone can view single post
-                        .requestMatchers("/api/posts/**", "/api/comments/**", "/api/likes/**").authenticated()
-                        .anyRequest().authenticated())
-                .headers(headers -> headers.frameOptions().disable()) // For H2 console
+                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll()
+                        .requestMatchers("/api/posts/**", "/api/comments/**", "/api/likes/**", "/api/users/**")
+                        .authenticated()
+                        .anyRequest().permitAll())
+                .headers(headers -> headers.frameOptions().disable())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
