@@ -1,6 +1,8 @@
 package com.minhtetthar.post_now.controller;
 
 import com.minhtetthar.post_now.service.LikeService;
+import com.minhtetthar.post_now.service.NotificationService;
+import com.minhtetthar.post_now.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,6 +16,8 @@ import java.util.Map;
 public class LikeController {
 
     private final LikeService likeService;
+    private final NotificationService notificationService;
+    private final UserService userService;
 
     @GetMapping("/post/{postId}/count")
     public ResponseEntity<Map<String, Long>> getLikesCount(@PathVariable Long postId) {
@@ -43,6 +47,12 @@ public class LikeController {
             Authentication auth) {
         try {
             likeService.likePost(postId, auth.getName());
+
+            // Trigger notification for post author
+            var actor = userService.loadUserByUsername(auth.getName());
+            var post = likeService.getPost(postId);
+            notificationService.createNewLikeNotification(actor, post);
+
             return ResponseEntity.ok(Map.of("message", "Post liked successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -76,3 +86,7 @@ public class LikeController {
         }
     }
 }
+
+/*
+ * Just testing wow haha
+ */

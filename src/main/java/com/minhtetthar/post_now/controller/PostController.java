@@ -7,7 +7,9 @@ import com.minhtetthar.post_now.exception.FileUploadException;
 import com.minhtetthar.post_now.exception.FileSizeLimitExceededException;
 import com.minhtetthar.post_now.exception.InvalidFileTypeException;
 import com.minhtetthar.post_now.service.FileStorageService;
+import com.minhtetthar.post_now.service.NotificationService;
 import com.minhtetthar.post_now.service.PostService;
+import com.minhtetthar.post_now.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,8 @@ public class PostController {
 
         private final PostService postService;
         private final FileStorageService fileStorageService;
+        private final NotificationService notificationService;
+        private final UserService userService;
 
         @GetMapping
         public ResponseEntity<Page<PostDto>> getAllPosts(
@@ -82,6 +86,12 @@ public class PostController {
                         Authentication auth) {
                 try {
                         PostDto post = postService.createPost(createDto, auth.getName());
+
+                        // Trigger notification for followers
+                        var author = userService.loadUserByUsername(auth.getName());
+                        var postEntity = postService.getPostEntity(post.getId());
+                        notificationService.createNewPostNotification(author, postEntity);
+
                         return ResponseEntity.status(HttpStatus.CREATED).body(post);
                 } catch (Exception e) {
                         return ResponseEntity.badRequest().build();
@@ -106,6 +116,12 @@ public class PostController {
                         }
 
                         PostDto post = postService.createPost(createDto, auth.getName());
+
+                        // Trigger notification for followers
+                        var author = userService.loadUserByUsername(auth.getName());
+                        var postEntity = postService.getPostEntity(post.getId());
+                        notificationService.createNewPostNotification(author, postEntity);
+
                         return ResponseEntity.status(HttpStatus.CREATED).body(post);
 
                 } catch (InvalidFileTypeException | FileSizeLimitExceededException e) {

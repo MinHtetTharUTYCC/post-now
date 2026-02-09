@@ -3,6 +3,8 @@ package com.minhtetthar.post_now.controller;
 import com.minhtetthar.post_now.dto.comment.CommentCreateDto;
 import com.minhtetthar.post_now.dto.comment.CommentDto;
 import com.minhtetthar.post_now.service.CommentService;
+import com.minhtetthar.post_now.service.NotificationService;
+import com.minhtetthar.post_now.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
+    private final NotificationService notificationService;
+    private final UserService userService;
 
     @GetMapping("/post/{postId}")
     public ResponseEntity<Page<CommentDto>> getCommentsByPostId(
@@ -51,6 +55,12 @@ public class CommentController {
             Authentication auth) {
         try {
             CommentDto comment = commentService.createComment(postId, createDto, auth.getName());
+
+            // Trigger notification for post author
+            var actor = userService.loadUserByUsername(auth.getName());
+            var commentEntity = commentService.getCommentEntity(comment.getId());
+            notificationService.createNewCommentNotification(actor, commentEntity);
+
             return ResponseEntity.status(HttpStatus.CREATED).body(comment);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

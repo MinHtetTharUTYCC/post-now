@@ -106,6 +106,35 @@
 			<version>4.0.0</version>
 		</dependency>
 
+		<!-- Resend for email notifications -->
+		<dependency>
+			<groupId>com.resend</groupId>
+			<artifactId>resend-java</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+
+		<!-- Bucket4j for rate limiting -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j-core</artifactId>
+			<version>8.10.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
+		<!-- Springdoc OpenAPI for API documentation and Swagger UI -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

@@ -9,6 +9,7 @@ import com.minhtetthar.post_now.mapper.CommentMapper;
 import com.minhtetthar.post_now.repository.CommentRepository;
 import com.minhtetthar.post_now.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ public class CommentService {
     }
 
     @Transactional
+    @CacheEvict(value = "postStats", allEntries = true)
     public CommentDto createComment(Long postId, CommentCreateDto createDto, String username) {
         Post post = postRepository.findActivePostById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
@@ -54,6 +56,7 @@ public class CommentService {
     }
 
     @Transactional
+    @CacheEvict(value = "postStats", allEntries = true)
     public void deleteComment(Long commentId, String username) {
         Comment comment = commentRepository.findActiveCommentById(commentId);
 
@@ -67,5 +70,13 @@ public class CommentService {
 
         comment.setActive(false);
         commentRepository.save(comment);
+    }
+
+    public Comment getCommentEntity(Long id) {
+        Comment comment = commentRepository.findActiveCommentById(id);
+        if (comment == null) {
+            throw new RuntimeException("Comment not found with id: " + id);
+        }
+        return comment;
     }
 }

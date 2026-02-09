@@ -6,6 +6,7 @@ import com.minhtetthar.post_now.entity.User;
 import com.minhtetthar.post_now.repository.LikeRepository;
 import com.minhtetthar.post_now.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class LikeService {
     }
 
     @Transactional
+    @CacheEvict(value = "postStats", allEntries = true)
     public void likePost(Long postId, String username) {
         Post post = postRepository.findActivePostById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
@@ -54,6 +56,7 @@ public class LikeService {
     }
 
     @Transactional
+    @CacheEvict(value = "postStats", allEntries = true)
     public void unlikePost(Long postId, String username) {
         Post post = postRepository.findActivePostById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
@@ -70,6 +73,7 @@ public class LikeService {
     }
 
     @Transactional
+    @CacheEvict(value = "postStats", allEntries = true)
     public void toggleLike(Long postId, String username) {
         Post post = postRepository.findActivePostById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
@@ -87,5 +91,10 @@ public class LikeService {
                     .build();
             likeRepository.save(like);
         }
+    }
+
+    public Post getPost(Long postId) {
+        return postRepository.findActivePostById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
     }
 }

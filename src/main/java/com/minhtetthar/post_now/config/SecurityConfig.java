@@ -27,6 +27,10 @@ public class SecurityConfig {
 
     @Autowired
     @Lazy
+    private RateLimitFilter rateLimitFilter;
+
+    @Autowired
+    @Lazy
     private UserService userService;
 
     @Bean
@@ -43,6 +47,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll())
                 .headers(headers -> headers.frameOptions().disable())
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

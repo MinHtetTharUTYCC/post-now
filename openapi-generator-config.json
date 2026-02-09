@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenAPITools/openapi-generator/master/modules/openapi-generator-cli/src/main/resources/openapi-generator-cli-schema.json",
+  "packageName": "@post-now/api-client",
+  "packageVersion": "1.0.0",
+  "apiDocumentationUrl": "http://localhost:8090/v3/api-docs",
+  "supportsES6": true,
+  "npmVersion": "6",
+  "generateApiDocumentation": false,
+  "generateApiTests": false,
+  "generateModels": true,
+  "generateModelTests": false,
+  "typescriptThreePlus": true,
+  "null": "undefined",
+  "enumPropertyNaming": "PascalCase"
+}

@@ -7,6 +7,8 @@ import com.minhtetthar.post_now.entity.User;
 import com.minhtetthar.post_now.mapper.UserMapper;
 import com.minhtetthar.post_now.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,6 +27,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Cacheable(value = "users", key = "#username")
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
@@ -35,6 +38,7 @@ public class UserService implements UserDetailsService {
         return userMapper.toDto(user);
     }
 
+    @Cacheable(value = "users", key = "#id")
     public UserDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -73,6 +77,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserDto updateUser(String username, UserUpdateDto updateDto) {
         User user = loadUserByUsername(username);
 
@@ -88,6 +93,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public void deleteUser(String username) {
         User user = loadUserByUsername(username);
         user.setEnabled(false);

@@ -10,6 +10,8 @@ import com.minhtetthar.post_now.repository.CommentRepository;
 import com.minhtetthar.post_now.repository.LikeRepository;
 import com.minhtetthar.post_now.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserService userService;
 
+    @Cacheable(value = "posts", key = "#id")
     public PostDto getPostById(Long id, String currentUsername) {
         Post post = postRepository.findActivePostById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
@@ -57,6 +60,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = { "posts", "postStats" }, allEntries = true)
     public PostDto createPost(PostCreateDto createDto, String username) {
         User author = userService.loadUserByUsername(username);
 
@@ -68,6 +72,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = { "posts", "postStats" }, allEntries = true)
     public PostDto updatePost(Long id, PostUpdateDto updateDto, String username) {
         Post post = postRepository.findActivePostById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
@@ -83,6 +88,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = { "posts", "postStats" }, allEntries = true)
     public void deletePost(Long id, String username) {
         Post post = postRepository.findActivePostById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
@@ -95,6 +101,12 @@ public class PostService {
         postRepository.save(post);
     }
 
+    public Post getPostEntity(Long id) {
+        return postRepository.findActivePostById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
+    }
+
+    @Cacheable(value = "postStats", key = "#post.id + '-' + #currentUsername")
     private PostDto enrichPostDto(Post post, String currentUsername) {
         PostDto dto = postMapper.toDto(post);
         dto.setLikesCount(likeRepository.countByPost(post));
